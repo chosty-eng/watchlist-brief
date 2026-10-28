@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Watchlist Brief</title>
+<!-- Data lives at the top of the <script> at the end of <body>: WATCHLIST, BRIEF, CHANGELOG. -->
+<style>
+:root {
+  --navy: #0C2340;
+  --navy-2: #1b3558;
+  --gold: #C99700;
+  --ink: #16202e;
+  --muted: #5a6672;
+  --line: #dfe3ea;
+  --panel: #f6f7f9;
+  --bg: #ffffff;
+  --up: #1b7a45;
+  --down: #b3261e;
+  --flat: #7b8794;
+  --focus: #1a5fb4;
+  --radius: 10px;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+}
+a { color: var(--navy); text-underline-offset: 2px; }
+a:hover { color: var(--navy-2); }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 46rem; margin: 0 auto; padding: 0 16px; }
+h1, h2, h3 { line-height: 1.2; margin: 0; }
+
+/* Masthead */
+.masthead { background: var(--navy); color: #fff; border-bottom: 4px solid var(--gold); }
+.masthead .wrap { padding: 1.4rem 16px 1.3rem; }
+.masthead .owner { color: var(--gold); font-size: .9rem; margin: 0 0 .25rem; }
+.masthead h1 { font-size: 1.7rem; font-weight: 700; }
+.masthead .asof { margin: .45rem 0 0; font-size: 1rem; color: #d6dce6; }
+.masthead .asof strong { color: #fff; }
+.banner {
+  margin: .9rem 0 0; background: #fff7e3; color: #4a3a00; border-left: 5px solid var(--gold);
+  border-radius: 6px; padding: .55rem .8rem; font-size: .92rem;
+}
+
+main { padding: 1.4rem 0 2rem; }
+section { margin-bottom: 2rem; }
+.section-title { font-size: 1.15rem; color: var(--navy); margin-bottom: .6rem; }
+.lead { margin: 0 0 .8rem; color: var(--muted); font-size: .92rem; }
+
+/* The tape */
+.tape { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.tape li {
+  display: grid; grid-template-columns: minmax(0,1fr) 112px 96px; gap: .6rem; align-items: center;
+  min-height: 56px; padding: .55rem 0; border-bottom: 1px solid var(--line);
+}
+.tape .sym { font-weight: 700; font-size: 1.05rem; }
+.tape .sym a { text-decoration: none; }
+.tape .sym a:hover { text-decoration: underline; }
+.tape .name { color: var(--muted); font-size: .85rem; margin: 0; }
+.tape svg { width: 112px; height: 34px; display: block; }
+.tape .px { text-align: right; }
+.tape .last { font-weight: 700; display: block; }
+.tape .chg { display: block; font-size: .9rem; }
+.up { color: var(--up); }
+.down { color: var(--down); }
+.flat { color: var(--flat); }
+.spark-line { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.spark-dot { stroke: none; }
+
+/* Company sections */
+.co { border-top: 3px solid var(--navy); padding-top: .7rem; margin-bottom: 1.6rem; }
+.co h3 { font-size: 1.1rem; color: var(--navy); }
+.co .why { margin: .15rem 0 .7rem; color: var(--muted); font-size: .9rem; }
+.co h4 { font-size: .95rem; margin: .8rem 0 .35rem; color: var(--ink); }
+.items { list-style: none; margin: 0; padding: 0; }
+.items li { padding: .45rem 0; border-bottom: 1px solid var(--line); }
+.items li:last-child { border-bottom: 0; }
+.items .d { color: var(--muted); font-size: .85rem; }
+.items .h { display: block; margin: .05rem 0; }
+.items .h a { font-weight: 600; }
+.items .src { color: var(--muted); font-size: .85rem; }
+.items .w { margin: .15rem 0 0; font-size: .92rem; }
+.empty { color: var(--muted); font-size: .92rem; margin: 0; }
+
+/* Calendar */
+.cal { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.cal li { display: grid; grid-template-columns: 5.2rem 3.4rem minmax(0,1fr); gap: .5rem; padding: .5rem 0; border-bottom: 1px solid var(--line); }
+.cal .d { font-weight: 600; }
+.cal .t { font-weight: 700; color: var(--navy); }
+.cal .src { color: var(--muted); font-size: .85rem; }
+
+/* Changelog */
+.log { list-style: none; margin: 0; padding: 0; }
+.log li { background: var(--panel); border-radius: var(--radius); padding: .8rem .95rem; margin-bottom: .7rem; }
+.log .d { font-weight: 700; color: var(--navy); }
+.log ul { margin: .35rem 0 0; padding-left: 1.2rem; }
+.log .note { margin: .4rem 0 0; color: var(--muted); font-size: .9rem; }
+.log .note strong { color: var(--ink); }
+
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: .85rem; padding: 1rem 0 2rem; }
+footer p { margin: .2rem 0; }
+
+@media (max-width: 420px) {
+  .tape li { grid-template-columns: minmax(0,1fr) 92px 84px; }
+  .tape svg { width: 92px; }
+  .cal li { grid-template-columns: 4.6rem 3.2rem minmax(0,1fr); }
+}
+
+@media print {
+  body { font-size: 11.5pt; color: #000; }
+  .masthead { background: #fff; color: #000; border-bottom: 2px solid #000; }
+  .masthead .owner, .masthead .asof, .masthead .asof strong { color: #000; }
+  .banner { border-left-color: #000; background: #fff; color: #000; }
+  .wrap { max-width: none; padding: 0; }
+  a { color: #000; text-decoration: none; }
+  .items .h a::after { content: " (" attr(href) ")"; font-size: 8.5pt; color: #444; }
+  .co { break-inside: avoid; }
+  #changelog, .no-print { display: none; }
+  .spark-line { stroke: #000; }
+  .up, .down, .flat { color: #000; }
+}
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="owner" id="owner"></p>
+    <h1 id="title">Watchlist Brief</h1>
+    <p class="asof" id="asof"></p>
+    <div id="banner"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section id="tape-section">
+    <h2 class="section-title">The tape</h2>
+    <p class="lead" id="tape-lead"></p>
+    <ul class="tape" id="tape"></ul>
+  </section>
+
+  <section id="companies"></section>
+
+  <section id="calendar-section">
+    <h2 class="section-title">Calendar: the next two weeks</h2>
+    <ul class="cal" id="calendar"></ul>
+  </section>
+
+  <section id="changelog">
+    <h2 class="section-title">What changed</h2>
+    <p class="lead">One entry per refresh, newest first. Each line compares the first and last price in that refresh.</p>
+    <ul class="log" id="log"></ul>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p id="disclaimer"></p>
+    <p id="repo"></p>
+  </div>
+</footer>
+
+<script>
+/* ===== DATA. The refresh-brief agent edits BRIEF and CHANGELOG only. ===== */
+
+const WATCHLIST = {
+  owner: "Your Name",
+  club: "SIBC",
+  repo: "",
+  tickers: [
+    { symbol: "NVDA", name: "NVIDIA", exchange: "NASDAQ", why: "The AI capex cycle in one ticker. If this moves, the whole list moves." },
+    { symbol: "JPM",  name: "JPMorgan Chase", exchange: "NYSE", why: "The bank every banking recruit should be able to talk about for five minutes." },
+    { symbol: "ACN",  name: "Accenture", exchange: "NYSE", why: "The consulting bellwether. Its bookings tell you how clients feel about spending." },
+    { symbol: "DE",   name: "Deere", exchange: "NYSE", why: "Midwest industrial. Farm income, tariffs, and rates all show up here." },
+    { symbol: "LLY",  name: "Eli Lilly", exchange: "NYSE", why: "Indiana's largest company and the GLP-1 story." }
+  ]
+};
+
+const BRIEF = {
+  mode: "sample",
+  asOf: "2026-10-16",
+  retrievedAt: "2026-10-16T16:30:00-04:00",
+  priceType: "close",
+  companies: {
+    NVDA: {
+      closes: [
+        { date: "2026-10-12", close: 100.00 },
+        { date: "2026-10-13", close: 101.40 },
+        { date: "2026-10-14", close: 99.80 },
+        { date: "2026-10-15", close: 103.10 },
+        { date: "2026-10-16", close: 104.20 }
+      ],
+      latest: null,
+      priceSource: "https://example.com/sample",
+      news: [
+        { date: "2026-10-15", headline: "Sample headline. Run the refresh-brief agent to replace this.", source: "Sample", url: "https://example.com/sample", why: "Sample. The agent writes one plain sentence here on why the item matters to the stock." }
+      ],
+      upcoming: [
+        { date: "2026-10-28", event: "Sample event (replace by refreshing)", source: "Sample", url: "https://example.com/sample" }
+      ]
+    },
+    JPM: {
+      closes: [
+        { date: "2026-10-12", close: 100.00 },
+        { date: "2026-10-13", close: 99.30 },
+        { date: "2026-10-14", close: 98.90 },
+        { date: "2026-10-15", close: 98.20 },
+        { date: "2026-10-16", close: 97.60 }
+      ],
+      latest: null,
+      priceSource: "https://example.com/sample",
+      news: [
+        { date: "2026-10-14", headline: "Sample headline. Run the refresh-brief agent to replace this.", source: "Sample", url: "https://example.com/sample", why: "Sample." }
+      ],
+      upcoming: []
+    },
+    ACN: {
+      closes: [
+        { date: "2026-10-12", close: 100.00 },
+        { date: "2026-10-13", close: 100.20 },
+        { date: "2026-10-14", close: 99.90 },
+        { date: "2026-10-15", close: 100.10 },
+        { date: "2026-10-16", close: 100.05 }
+      ],
+      latest: null,
+      priceSource: "https://example.com/sample",
+      news: [],
+      upcoming: [
+        { date: "2026-10-22", event: "Sample event (replace by refreshing)", source: "Sample", url: "https://example.com/sample" }
+      ]
+    },
+    DE: {
+      closes: [
+        { date: "2026-10-12", close: 100.00 },
+        { date: "2026-10-13", close: 102.50 },
+        { date: "2026-10-14", close: 101.80 },
+        { date: "2026-10-15", close: 103.90 },
+        { date: "2026-10-16", close: 102.70 }
+      ],
+      latest: null,
+      priceSource: "https://example.com/sample",
+      news: [
+        { date: "2026-10-13", headline: "Sample headline. Run the refresh-brief agent to replace this.", source: "Sample", url: "https://example.com/sample", why: "Sample." }
+      ],
+      upcoming: []
+    },
+    LLY: {
+      closes: [
+        { date: "2026-10-12", close: 100.00 },
+        { date: "2026-10-13", close: 98.70 },
+        { date: "2026-10-14", close: 99.60 },
+        { date: "2026-10-15", close: 101.30 },
+        { date: "2026-10-16", close: 102.90 }
+      ],
+      latest: null,
+      priceSource: "https://example.com/sample",
+      news: [
+        { date: "2026-10-16", headline: "Sample headline. Run the refresh-brief agent to replace this.", source: "Sample", url: "https://example.com/sample", why: "Sample." }
+      ],
+      upcoming: [
+        { date: "2026-10-30", event: "Sample event (replace by refreshing)", source: "Sample", url: "https://example.com/sample" }
+      ]
+    }
+  }
+};
+
+const CHANGELOG = [
+  {
+    date: "2026-10-16",
+    summary: [
+      "Sample data loaded. No real prices or news yet.",
+      "Run the refresh-brief agent to replace everything above with real, sourced data."
+    ],
+    note: "This entry is a placeholder. The agent adds a new entry on top at every refresh."
+  }
+];
+
+/* ===== RENDERING. Reads only WATCHLIST, BRIEF, CHANGELOG. ===== */
+
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function parseISO(s) {
+  if (!s || typeof s !== "string") return null;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!m) return null;
+  return new Date(+m[1], +m[2] - 1, +m[3]);
+}
+function fmtDate(s, withDay) {
+  const d = parseISO(s);
+  if (!d) return "undated";
+  const base = MONTHS[d.getMonth()] + " " + d.getDate();
+  return withDay ? DAYS[d.getDay()] + " " + base : base;
+}
+function fmtLong(s) {
+  const d = parseISO(s);
+  if (!d) return "unknown date";
+  return DAYS[d.getDay()] + ", " + MONTHS[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear();
+}
+function money(n) {
+  return (typeof n === "number" && isFinite(n)) ? n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "n/a";
+}
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+}
+function safeUrl(u) {
+  return (typeof u === "string" && /^https?:\/\//i.test(u)) ? u : "";
+}
+function company(sym) {
+  const c = BRIEF.companies && BRIEF.companies[sym];
+  if (!c) return null;
+  return {
+    closes: Array.isArray(c.closes) ? c.closes.filter(x => x && typeof x.close === "number") : [],
+    latest: (c.latest && typeof c.latest.price === "number") ? c.latest : null,
+    priceSource: safeUrl(c.priceSource),
+    news: Array.isArray(c.news) ? c.news : [],
+    upcoming: Array.isArray(c.upcoming) ? c.upcoming : []
+  };
+}
+function series(c) {
+  const pts = c.closes.map(x => x.close);
+  if (c.latest) pts.push(c.latest.price);
+  return pts;
+}
+function weekChange(c) {
+  const pts = series(c);
+  if (pts.length < 2 || !pts[0]) return null;
+  return (pts[pts.length - 1] - pts[0]) / pts[0];
+}
+function dirClass(ch) {
+  if (ch === null || Math.abs(ch) < 0.0005) return "flat";
+  return ch > 0 ? "up" : "down";
+}
+function sparkline(pts, cls) {
+  if (pts.length < 2) return '<svg viewBox="0 0 120 36" aria-hidden="true"><line class="spark-line flat" x1="6" y1="18" x2="114" y2="18" stroke="currentColor" stroke-dasharray="3 4"/></svg>';
+  const min = Math.min(...pts), max = Math.max(...pts), span = (max - min) || 1;
+  const x = i => 6 + i * (108 / (pts.length - 1));
+  const y = v => 30 - ((v - min) / span) * 24;
+  const d = pts.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
+  const lx = x(pts.length - 1).toFixed(1), ly = y(pts[pts.length - 1]).toFixed(1);
+  return '<svg viewBox="0 0 120 36" aria-hidden="true" class="' + cls + '"><path class="spark-line" d="' + d + '" stroke="currentColor"/><circle class="spark-dot" cx="' + lx + '" cy="' + ly + '" r="3" fill="currentColor"/></svg>';
+}
+
+function renderMasthead() {
+  const ownerBits = [];
+  if (WATCHLIST.owner) ownerBits.push(esc(WATCHLIST.owner));
+  if (WATCHLIST.club) ownerBits.push(esc(WATCHLIST.club) + " watchlist");
+  document.getElementById("owner").textContent = ownerBits.join(", ");
+  let asof = "As of " + fmtLong(BRIEF.asOf);
+  if (BRIEF.priceType === "intraday") {
+    const anyLatest = Object.values(BRIEF.companies || {}).map(c => c && c.latest).find(Boolean);
+    asof += anyLatest && anyLatest.time ? ", intraday at " + esc(anyLatest.time) + " ET" : ", intraday";
+  } else {
+    asof += ", at the close";
+  }
+  document.getElementById("asof").innerHTML = "<strong>" + asof + "</strong>";
+  const banner = document.getElementById("banner");
+  if (BRIEF.mode !== "live") {
+    banner.innerHTML = '<div class="banner">Sample data. Nothing on this page is real yet. Ask Claude: "Use the refresh-brief agent. Refresh the brief for today."</div>';
+  } else {
+    banner.innerHTML = "";
+  }
+  document.title = (WATCHLIST.club ? WATCHLIST.club + " " : "") + "Watchlist Brief, " + fmtDate(BRIEF.asOf);
+}
+
+function renderTape() {
+  const ul = document.getElementById("tape");
+  const lead = document.getElementById("tape-lead");
+  const tickers = WATCHLIST.tickers || [];
+  if (!tickers.length) { lead.textContent = "No tickers in WATCHLIST."; ul.innerHTML = ""; return; }
+  const firstDate = Object.values(BRIEF.companies || {}).map(c => c && c.closes && c.closes[0] && c.closes[0].date).filter(Boolean).sort()[0];
+  lead.textContent = "Last " + (BRIEF.priceType === "intraday" ? "price" : "close") + " and the move since " + (firstDate ? fmtDate(firstDate, true) : "the start of the window") + ".";
+  ul.innerHTML = tickers.map(t => {
+    const c = company(t.symbol);
+    const sym = '<span class="sym">' + (c && c.priceSource ? '<a href="' + esc(c.priceSource) + '">' + esc(t.symbol) + '</a>' : esc(t.symbol)) + '</span><p class="name">' + esc(t.name) + '</p>';
+    if (!c || !series(c).length) {
+      return '<li><div>' + sym + '</div>' + sparkline([], "flat") + '<div class="px"><span class="last flat">no data</span><span class="chg flat">not refreshed</span></div></li>';
+    }
+    const pts = series(c), ch = weekChange(c), cls = dirClass(ch);
+    const chgText = ch === null ? "n/a" : (ch > 0 ? "+" : "") + (ch * 100).toFixed(1) + "%";
+    return '<li><div>' + sym + '</div>' + sparkline(pts, cls) +
+      '<div class="px"><span class="last">' + money(pts[pts.length - 1]) + '</span><span class="chg ' + cls + '">' + chgText + '</span></div></li>';
+  }).join("");
+}
+
+function newsItem(n) {
+  const u = safeUrl(n.url);
+  const head = u ? '<a href="' + esc(u) + '">' + esc(n.headline) + '</a>' : esc(n.headline);
+  return '<li><span class="d">' + fmtDate(n.date, true) + '</span>' +
+    '<span class="h">' + head + '</span>' +
+    (n.source ? '<span class="src">' + esc(n.source) + '</span>' : "") +
+    (n.why ? '<p class="w">' + esc(n.why) + '</p>' : "") + '</li>';
+}
+function eventItem(e) {
+  const u = safeUrl(e.url);
+  const src = e.source ? (u ? '<a class="src" href="' + esc(u) + '">' + esc(e.source) + '</a>' : '<span class="src">' + esc(e.source) + '</span>') : "";
+  return '<li><span class="d">' + fmtDate(e.date, true) + '</span><span class="h">' + esc(e.event) + '</span>' + src + '</li>';
+}
+
+function renderCompanies() {
+  const host = document.getElementById("companies");
+  host.innerHTML = (WATCHLIST.tickers || []).map(t => {
+    const c = company(t.symbol);
+    let body;
+    if (!c) {
+      body = '<p class="empty">Not refreshed yet. No price, news, or calendar for this ticker.</p>';
+    } else {
+      body = '<h4>What happened in the last seven days</h4>' +
+        (c.news.length ? '<ul class="items">' + c.news.slice(0, 3).map(newsItem).join("") + '</ul>' : '<p class="empty">No dated news items were found for this window.</p>') +
+        '<h4>Coming up</h4>' +
+        (c.upcoming.length ? '<ul class="items">' + c.upcoming.map(eventItem).join("") + '</ul>' : '<p class="empty">Nothing scheduled in the next two weeks was found.</p>');
+    }
+    return '<article class="co" id="co-' + esc(t.symbol) + '"><h3>' + esc(t.symbol) + ', ' + esc(t.name) + '</h3><p class="why">' + esc(t.why) + '</p>' + body + '</article>';
+  }).join("");
+}
+
+function renderCalendar() {
+  const ul = document.getElementById("calendar");
+  const rows = [];
+  (WATCHLIST.tickers || []).forEach(t => {
+    const c = company(t.symbol);
+    if (!c) return;
+    c.upcoming.forEach(e => rows.push({ sym: t.symbol, e: e }));
+  });
+  rows.sort((a, b) => String(a.e.date).localeCompare(String(b.e.date)));
+  if (!rows.length) { ul.innerHTML = '<li class="empty" style="display:block">No scheduled events were found across the watchlist.</li>'; return; }
+  ul.innerHTML = rows.map(r => {
+    const u = safeUrl(r.e.url);
+    return '<li><span class="d">' + fmtDate(r.e.date, true) + '</span><span class="t">' + esc(r.sym) + '</span><span>' + esc(r.e.event) +
+      (r.e.source ? ' <span class="src">(' + (u ? '<a href="' + esc(u) + '">' + esc(r.e.source) + '</a>' : esc(r.e.source)) + ')</span>' : "") + '</span></li>';
+  }).join("");
+}
+
+function renderLog() {
+  const ul = document.getElementById("log");
+  if (!Array.isArray(CHANGELOG) || !CHANGELOG.length) { ul.innerHTML = '<li class="empty">No refreshes recorded.</li>'; return; }
+  ul.innerHTML = CHANGELOG.map(e => {
+    const lines = Array.isArray(e.summary) ? e.summary : [];
+    return '<li><span class="d">' + fmtLong(e.date) + '</span>' +
+      (lines.length ? '<ul>' + lines.map(l => '<li>' + esc(l) + '</li>').join("") + '</ul>' : "") +
+      (e.note ? '<p class="note"><strong>Verify:</strong> ' + esc(e.note) + '</p>' : "") + '</li>';
+  }).join("");
+}
+
+function renderFooter() {
+  const who = WATCHLIST.owner ? esc(WATCHLIST.owner) : "the owner";
+  document.getElementById("disclaimer").innerHTML = "Unofficial. Not investment advice. Numbers and headlines were collected by an AI agent and verified by " + who + ". Sources are linked. Last refresh ran " + (BRIEF.retrievedAt ? esc(String(BRIEF.retrievedAt).replace("T", " at ").slice(0, 19)) : "at an unknown time") + ".";
+  const repo = safeUrl(WATCHLIST.repo);
+  document.getElementById("repo").innerHTML = repo ? '<a href="' + esc(repo) + '">Source and update history on GitHub</a>' : "";
+}
+
+renderMasthead();
+renderTape();
+renderCompanies();
+renderCalendar();
+renderLog();
+renderFooter();
+</script>
+</body>
+</html>
